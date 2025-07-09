@@ -1,13 +1,13 @@
 variable "aws_region" {
-  description = "La región de AWS donde se desplegará la infraestructura."
+  description = "Region: Ohio"
   type        = string
-  default     = "us-east-1" # Puedes cambiarla a tu región preferida 
+  default     = "us-east-2"
 }
 
 variable "project_name" {
-  description = "Nombre del proyecto para etiquetar recursos."
+  description = "Digital library, Secretos para contar app"
   type        = string
-  default     = "MiApp"
+  default     = "Secretos para contar app"
 }
 
 variable "vpc_cidr_block" {
@@ -23,25 +23,25 @@ variable "public_subnet_cidr_block" {
 }
 
 variable "instance_type_frontend" {
-  description = "Tipo de instancia EC2 para el frontend."
+  description = "Frontend instance: EC2"
   type        = string
-  default     = "t2.micro" # Ajusta según tus necesidades 
+  default     = "t2.micro" 
 }
 
 variable "instance_type_backend" {
-  description = "Tipo de instancia EC2 para el backend."
+  description = "Backend instance: EC2"
   type        = string
-  default     = "t2.micro" # Ajusta según tus necesidades 
+  default     = "t2.micro" 
 }
 
 variable "ami_id" {
-  description = "ID de la AMI (Amazon Machine Image) para las instancias."
+  description = "AMI: Amazon Linux"
   type        = string
-  default     = "ami-053b0d53c2792add8"
+  default     = "ami-0c803b171269e2d72"
 }
 
 variable "key_pair_name" {
-  description = "Nombre del par de claves SSH existente en AWS."
+  description = "Key pair name: terraform-cloud5"
   type        = string
-  default     = "mi-par-de-claves"
+  default     = "terraform-cloud5"
 }
