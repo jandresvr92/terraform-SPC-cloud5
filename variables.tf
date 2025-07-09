@@ -7,7 +7,7 @@ variable "aws_region" {
 variable "project_name" {
   description = "Digital library, Secretos para contar app"
   type        = string
-  default     = "Secretos para contar app"
+  default     = "Secretos para contar - App"
 }
 
 variable "vpc_cidr_block" {
@@ -45,3 +45,4 @@ variable "key_pair_name" {
   type        = string
   default     = "terraform-cloud5"
 }
+

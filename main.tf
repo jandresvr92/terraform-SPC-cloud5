@@ -80,6 +80,14 @@ resource "aws_security_group" "frontend_sg" {
     protocol    = "-1" 
     cidr_blocks = ["0.0.0.0/0"] 
   } 
+  ingress {
+    description = "Frontend app en puerto 5173"
+    from_port   = 5173
+    to_port     = 5173
+    protocol    = "tcp"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
+
 
   tags = { 
     Name = "${var.project_name}-Frontend-SG" 
@@ -101,8 +109,8 @@ resource "aws_security_group" "backend_sg" {
 
   ingress { 
     description     = "Tráfico de aplicación desde el frontend" 
-    from_port       = 3000 
-    to_port         = 3000 
+    from_port       = 3001 
+    to_port         = 3001 
     protocol        = "tcp" 
     security_groups = [aws_security_group.frontend_sg.id] 
   } 
