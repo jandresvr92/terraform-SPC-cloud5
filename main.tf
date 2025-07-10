@@ -4,7 +4,7 @@ resource "aws_vpc" "main" {
   enable_dns_hostnames = true 
 
   tags = { 
-    Name = "${var.project_name}-VPC" 
+    Name = "${var.project_name}-VPC-cloud5" 
   } 
 } 
 
@@ -15,7 +15,7 @@ resource "aws_subnet" "public" {
   availability_zone       = "${var.aws_region}a" 
 
   tags = { 
-    Name = "${var.project_name}-PublicSubnet" 
+    Name = "${var.project_name}-PublicSubnet-cloud5" 
   } 
 } 
 
@@ -23,7 +23,7 @@ resource "aws_internet_gateway" "main" {
   vpc_id = aws_vpc.main.id 
 
   tags = { 
-    Name = "${var.project_name}-IGW" 
+    Name = "${var.project_name}-IGW-cloud5" 
   } 
 } 
 
@@ -36,7 +36,7 @@ resource "aws_route_table" "public" {
   } 
 
   tags = { 
-    Name = "${var.project_name}-PublicRouteTable" 
+    Name = "${var.project_name}-PublicRouteTable-cloud5" 
   } 
 } 
 
@@ -47,7 +47,7 @@ resource "aws_route_table_association" "public" {
 
 resource "aws_security_group" "frontend_sg" { 
   name        = "${var.project_name}-Frontend-SG" 
-  description = "Permitir tráfico HTTP/HTTPS y SSH al frontend" 
+  description = "Permitir trafico HTTP HTTPS y SSH al frontend" 
   vpc_id      = aws_vpc.main.id 
 
   ingress { 
@@ -90,13 +90,13 @@ resource "aws_security_group" "frontend_sg" {
 
 
   tags = { 
-    Name = "${var.project_name}-Frontend-SG" 
+    Name = "${var.project_name}-Frontend-SG-cloud5" 
   } 
 } 
 
 resource "aws_security_group" "backend_sg" { 
   name        = "${var.project_name}-Backend-SG" 
-  description = "Permitir tráfico desde el frontend y SSH al backend" 
+  description = "Permitir trafico desde el frontend y SSH al backend" 
   vpc_id      = aws_vpc.main.id 
 
   ingress { 
@@ -108,7 +108,7 @@ resource "aws_security_group" "backend_sg" {
   } 
 
   ingress { 
-    description     = "Tráfico de aplicación desde el frontend" 
+    description     = "Trafico de aplicacion desde el frontend" 
     from_port       = 3001 
     to_port         = 3001 
     protocol        = "tcp" 
@@ -123,7 +123,7 @@ resource "aws_security_group" "backend_sg" {
   } 
 
   tags = { 
-    Name = "${var.project_name}-Backend-SG" 
+    Name = "${var.project_name}-Backend-SG-cloud5" 
   } 
 } 
 
@@ -134,10 +134,10 @@ resource "aws_instance" "frontend_instance" {
   vpc_security_group_ids = [aws_security_group.frontend_sg.id] 
   key_name      = var.key_pair_name 
 
-  user_data = ""
+  user_data = filebase64("${path.module}/scripts/frontend-init.sh") 
 
   tags = { 
-    Name    = "${var.project_name}-FrontendInstance" 
+    Name    = "${var.project_name}-FrontendInstance-cloud5" 
     Purpose = "Frontend" 
   } 
 } 
@@ -149,10 +149,10 @@ resource "aws_instance" "backend_instance" {
   vpc_security_group_ids = [aws_security_group.backend_sg.id] 
   key_name      = var.key_pair_name 
 
-  user_data = ""
-
+  user_data = filebase64("${path.module}/scripts/backend-init.sh")
+  
   tags = { 
-    Name    = "${var.project_name}-BackendInstance" 
+    Name    = "${var.project_name}-BackendInstance-cloud5" 
     Purpose = "Backend" 
   } 
 } 
