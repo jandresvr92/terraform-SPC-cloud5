@@ -74,12 +74,6 @@ resource "aws_security_group" "frontend_sg" {
     cidr_blocks = ["0.0.0.0/0"] 
   } 
 
-  egress { 
-    from_port   = 0 
-    to_port     = 0 
-    protocol    = "-1" 
-    cidr_blocks = ["0.0.0.0/0"] 
-  } 
   ingress {
     description = "Frontend app en puerto 5173"
     from_port   = 5173
@@ -88,6 +82,12 @@ resource "aws_security_group" "frontend_sg" {
     cidr_blocks = ["0.0.0.0/0"]
   }
 
+  egress { 
+    from_port   = 0 
+    to_port     = 0 
+    protocol    = "-1" 
+    cidr_blocks = ["0.0.0.0/0"] 
+  } 
 
   tags = { 
     Name = "${var.project_name}-Frontend-SG-cloud5" 
@@ -96,7 +96,7 @@ resource "aws_security_group" "frontend_sg" {
 
 resource "aws_security_group" "backend_sg" { 
   name        = "${var.project_name}-Backend-SG" 
-  description = "Permitir trafico desde el frontend y SSH al backend" 
+  description = "Permitir trafico desde cualquier lugar y SSH al backend" 
   vpc_id      = aws_vpc.main.id 
 
   ingress { 
@@ -107,12 +107,13 @@ resource "aws_security_group" "backend_sg" {
     cidr_blocks = ["0.0.0.0/0"] 
   } 
 
+  # CORREGIDO: Permitir tráfico desde cualquier IP, no solo desde el frontend SG
   ingress { 
-    description     = "Trafico de aplicacion desde el frontend" 
-    from_port       = 3001 
-    to_port         = 3001 
-    protocol        = "tcp" 
-    security_groups = [aws_security_group.frontend_sg.id] 
+    description = "API del backend desde cualquier lugar" 
+    from_port   = 3001 
+    to_port     = 3001 
+    protocol    = "tcp" 
+    cidr_blocks = ["0.0.0.0/0"] 
   } 
 
   egress { 
@@ -127,21 +128,7 @@ resource "aws_security_group" "backend_sg" {
   } 
 } 
 
-resource "aws_instance" "frontend_instance" { 
-  ami           = var.ami_id 
-  instance_type = var.instance_type_frontend 
-  subnet_id     = aws_subnet.public.id 
-  vpc_security_group_ids = [aws_security_group.frontend_sg.id] 
-  key_name      = var.key_pair_name 
-
-  user_data = filebase64("${path.module}/scripts/frontend-init.sh") 
-
-  tags = { 
-    Name    = "${var.project_name}-FrontendInstance-cloud5" 
-    Purpose = "Frontend" 
-  } 
-} 
-
+# Crear el backend primero para obtener su IP
 resource "aws_instance" "backend_instance" { 
   ami           = var.ami_id 
   instance_type = var.instance_type_backend 
@@ -154,5 +141,27 @@ resource "aws_instance" "backend_instance" {
   tags = { 
     Name    = "${var.project_name}-BackendInstance-cloud5" 
     Purpose = "Backend" 
+  } 
+} 
+
+# Crear el frontend después del backend y pasar la IP del backend
+resource "aws_instance" "frontend_instance" { 
+  ami           = var.ami_id 
+  instance_type = var.instance_type_frontend 
+  subnet_id     = aws_subnet.public.id 
+  vpc_security_group_ids = [aws_security_group.frontend_sg.id] 
+  key_name      = var.key_pair_name 
+
+  # Usar template para pasar la IP del backend al frontend
+  user_data = base64encode(templatefile("${path.module}/scripts/frontend-init.sh", {
+    backend_ip = aws_instance.backend_instance.public_ip
+  }))
+
+  # Asegurar que el backend esté creado antes del frontend
+  depends_on = [aws_instance.backend_instance]
+
+  tags = { 
+    Name    = "${var.project_name}-FrontendInstance-cloud5" 
+    Purpose = "Frontend" 
   } 
 } 
